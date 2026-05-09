@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Email Security Scanner — Settings</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: #1a1a1a; }
+    .subtitle { font-size: 13px; color: #666; margin-bottom: 24px; line-height: 1.5; }
+    label { display: block; font-size: 13px; font-weight: 500; color: #333; margin-bottom: 6px; }
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: monospace;
+      color: #1a1a1a;
+      background: #fafafa;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: #4285f4; background: #fff; }
+    .row { display: flex; gap: 8px; margin-top: 6px; }
+    .show-btn {
+      padding: 0 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f0f0f0;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .save-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      background: #4285f4;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .save-btn:hover { background: #3370dc; }
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      text-align: center;
+      min-height: 20px;
+    }
+    .status.ok  { color: #2e7d32; }
+    .status.err { color: #c62828; }
+    .help {
+      margin-top: 20px;
+      padding: 12px;
+      background: #e8f0fe;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #1a55a3;
+      line-height: 1.6;
+    }
+    .help a { color: #1a55a3; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Settings</h2>
+    <p class="subtitle">
+      Your VirusTotal API key is stored locally on your device only — it is never sent anywhere except directly to VirusTotal.
+    </p>
+
+    <label for="apiKeyInput">VirusTotal API Key</label>
+    <div class="row">
+      <input type="password" id="apiKeyInput" placeholder="Paste your API key here" autocomplete="off">
+      <button class="show-btn" id="toggleShow">Show</button>
+    </div>
+
+    <button class="save-btn" id="saveBtn">Save Key</button>
+    <div class="status" id="status"></div>
+
+    <div class="help">
+      Don't have a key? Get a free one at
+      <a href="https://www.virustotal.com/gui/join-us" target="_blank">virustotal.com</a>.
+      Free accounts allow 4 lookups/minute and 500/day.
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Email Security Scanner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 360px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #fff;
+      color: #1a1a1a;
+      font-size: 13px;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: #1a73e8;
+      color: #fff;
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .header-icon {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .header h1 { font-size: 15px; font-weight: 600; }
+    .settings-btn {
+      background: none; border: none;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer; font-size: 18px; padding: 2px 4px;
+      border-radius: 4px; line-height: 1;
+    }
+    .settings-btn:hover { background: rgba(255,255,255,0.15); }
+
+    /* ---- Tabs ---- */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      background: #fafafa;
+    }
+    .tab {
+      flex: 1; padding: 9px 4px;
+      font-size: 12px; font-weight: 500;
+      text-align: center; cursor: pointer;
+      color: #666; border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    .tab:hover { color: #1a73e8; }
+    .tab.active { color: #1a73e8; border-bottom-color: #1a73e8; background: #fff; }
+
+    /* ---- Panels ---- */
+    .panel { display: none; padding: 14px 16px; }
+    .panel.active { display: block; }
+
+    /* ---- Buttons ---- */
+    .btn {
+      width: 100%;
+      padding: 9px 12px;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: background .15s, opacity .15s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover { background: #1558b0; }
+    .btn-secondary { background: #f0f0f0; color: #333; margin-top: 8px; }
+    .btn-secondary:hover { background: #e0e0e0; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ---- Spinner ---- */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+    .spinner.dark {
+      border-color: rgba(0,0,0,0.15);
+      border-top-color: #333;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- Result card ---- */
+    .result-card {
+      margin-top: 12px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      overflow: hidden;
+      display: none;
+    }
+    .result-card.visible { display: block; }
+
+    .risk-banner {
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .risk-banner.high   { background: #fce8e6; }
+    .risk-banner.medium { background: #fef7e0; }
+    .risk-banner.low    { background: #e6f4ea; }
+
+    .risk-icon { font-size: 22px; }
+    .risk-label { font-size: 15px; font-weight: 600; }
+    .risk-label.high   { color: #c5221f; }
+    .risk-label.medium { color: #b06000; }
+    .risk-label.low    { color: #1e7e34; }
+    .risk-sublabel { font-size: 11px; color: #666; margin-top: 1px; }
+
+    .result-rows { padding: 10px 14px; }
+    .result-row {
+      display: flex; align-items: flex-start;
+      gap: 8px; padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 12px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .row-label { color: #555; min-width: 90px; flex-shrink: 0; font-weight: 500; }
+    .row-val   { color: #1a1a1a; flex: 1; word-break: break-all; }
+    .row-val.danger  { color: #c5221f; font-weight: 500; }
+    .row-val.ok      { color: #1e7e34; }
+    .row-val.warning { color: #b06000; }
+
+    /* Reasons list */
+    .reasons-toggle {
+      font-size: 11px; color: #1a73e8;
+      cursor: pointer; margin-top: 6px;
+      display: inline-block;
+    }
+    .reasons-list {
+      display: none; margin-top: 6px;
+      background: #f8f8f8; border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .reasons-list.open { display: block; }
+    .reasons-list li {
+      font-size: 11px; color: #444;
+      margin-left: 14px; margin-bottom: 3px;
+      line-height: 1.4;
+    }
+
+    /* ---- Status / info line ---- */
+    .info-line {
+      font-size: 12px; color: #666;
+      margin-top: 8px; text-align: center;
+      min-height: 18px; line-height: 1.5;
+    }
+    .info-line.err { color: #c5221f; }
+
+    /* ---- Textarea / file input ---- */
+    textarea {
+      width: 100%; height: 80px;
+      border: 1px solid #ddd; border-radius: 8px;
+      padding: 8px 10px; font-size: 12px;
+      resize: vertical; outline: none;
+      font-family: monospace; margin-bottom: 8px;
+      transition: border-color .2s;
+    }
+    textarea:focus { border-color: #1a73e8; }
+
+    .file-row {
+      display: flex; gap: 8px; align-items: center;
+      margin-bottom: 8px;
+    }
+    input[type="file"] {
+      flex: 1; font-size: 12px;
+      border: 1px solid #ddd; border-radius: 8px;
+      padding: 6px 8px; background: #fafafa;
+    }
+
+    .section-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .05em;
+      color: #888; margin-bottom: 8px;
+    }
+
+    /* ---- No-key warning ---- */
+    .api-warning {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #7a4f00;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .api-warning a { color: #1a73e8; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">🛡</div>
+    <h1>Email Security Scanner</h1>
+  </div>
+  <button class="settings-btn" id="settingsBtn" title="Settings">⚙</button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="email">Email Scan</div>
+  <div class="tab" data-tab="headers">Headers</div>
+  <div class="tab" data-tab="file">File Hash</div>
+</div>
+
+<!-- ===== EMAIL SCAN PANEL ===== -->
+<div class="panel active" id="tab-email">
+  <div class="api-warning" id="apiWarning">
+    No API key set.
+    <a id="goSettings">Click here to add one</a> to enable VirusTotal URL scanning.
+  </div>
+
+  <p style="font-size:12px;color:#555;margin-bottom:10px;line-height:1.5;">
+    Open a Gmail email, then click Scan to analyse content, links, and attachments.
+  </p>
+
+  <button class="btn btn-primary" id="scanBtn">
+    <div class="spinner" id="scanSpinner"></div>
+    <span id="scanBtnText">Scan Email</span>
+  </button>
+
+  <div class="info-line" id="scanInfo"></div>
+
+  <div class="result-card" id="emailResult">
+    <div class="risk-banner" id="riskBanner">
+      <div class="risk-icon" id="riskIcon"></div>
+      <div>
+        <div class="risk-label" id="riskLabel"></div>
+        <div class="risk-sublabel" id="riskSublabel"></div>
+      </div>
+    </div>
+    <div class="result-rows" id="emailRows"></div>
+  </div>
+</div>
+
+<!-- ===== HEADER SCAN PANEL ===== -->
+<div class="panel" id="tab-headers">
+  <div class="section-label">Paste raw email headers</div>
+  <textarea id="headersInput" placeholder="Received: from ...\nAuthentication-Results: ..."></textarea>
+  <button class="btn btn-primary" id="advancedBtn">Analyse Headers</button>
+
+  <div class="result-card" id="headerResult" style="margin-top:12px;">
+    <div class="risk-banner" id="hRiskBanner">
+      <div class="risk-icon" id="hRiskIcon"></div>
+      <div>
+        <div class="risk-label" id="hRiskLabel"></div>
+        <div class="risk-sublabel" id="hRiskSublabel"></div>
+      </div>
+    </div>
+    <div class="result-rows" id="headerRows"></div>
+  </div>
+  <div class="info-line" id="headerInfo"></div>
+</div>
+
+<!-- ===== FILE HASH PANEL ===== -->
+<div class="panel" id="tab-file">
+  <div class="section-label">Hash a downloaded file</div>
+  <div class="file-row">
+    <input type="file" id="fileInput">
+  </div>
+  <button class="btn btn-primary" id="fileScanBtn">
+    <div class="spinner" id="fileSpinner"></div>
+    <span id="fileBtnText">Scan File (Hash)</span>
+  </button>
+
+  <div class="result-card" id="fileResult" style="margin-top:12px;">
+    <div class="risk-banner" id="fRiskBanner">
+      <div class="risk-icon" id="fRiskIcon"></div>
+      <div>
+        <div class="risk-label" id="fRiskLabel"></div>
+        <div class="risk-sublabel" id="fRiskSublabel"></div>
+      </div>
+    </div>
+    <div class="result-rows" id="fileRows"></div>
+  </div>
+  <div class="info-line" id="fileInfo"></div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

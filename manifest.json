@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Email Security Scanner",
+  "version": "5.0",
+  "description": "Phishing detection with content, URL, attachment and hash-based malware scanning",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://www.virustotal.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}
